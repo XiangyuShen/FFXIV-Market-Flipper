@@ -14,13 +14,14 @@ let body =
 *)
 
 let server = Array.get (Sys.get_argv()) 1
+let item_id = Array.get (Sys.get_argv()) 2
 let name =
-  Client.get (Uri.of_string "https://xivapi.com/item/31820") >>= fun (_, body) ->
+  Client.get (Uri.of_string ("https://xivapi.com/item/"^item_id)) >>= fun (_, body) ->
   body |> Cohttp_lwt.Body.to_string >|= fun body ->
   body
 
-let prices_hyperion =
-  Client.get (Uri.of_string ("https://universalis.app/api/"^server^"/31820" )) >>= fun (_, body) ->
+let prices_server =
+  Client.get (Uri.of_string ("https://universalis.app/api/"^server^"/"^item_id )) >>= fun (_, body) ->
   body |> Cohttp_lwt.Body.to_string >|= fun body ->
   body
 
@@ -35,7 +36,7 @@ let rec check_dc (dcs: (string * Yojson.Basic.t) list): string =
   | hd::tl -> match hd with
     | dc, servers -> if List.mem (Yojson.Basic.Util.to_list servers |> deconstruct_json_string_list) server ~equal:String.equal then dc else check_dc tl
 
-  let prices_primal =
+  let prices_dc =
     let dc_req = Client.get (Uri.of_string ("https://xivapi.com/servers/dc")) >>= fun (_, body) ->
       body |> Cohttp_lwt.Body.to_string >|= fun body ->
       body
@@ -43,13 +44,13 @@ let rec check_dc (dcs: (string * Yojson.Basic.t) list): string =
       let dc =
       Lwt_main.run dc_req |> Yojson.Basic.from_string |> Yojson.Basic.Util.to_assoc |> check_dc in
     (*NOW MATCH SERVER TO DC*)
-    Client.get (Uri.of_string ("https://universalis.app/api/"^dc^"/31820")) >>= fun (_, body) ->
+    Client.get (Uri.of_string ("https://universalis.app/api/"^dc^"/"^item_id)) >>= fun (_, body) ->
     body |> Cohttp_lwt.Body.to_string >|= fun body ->
     body
 
 let () =
-  let prices_dc = Lwt_main.run prices_primal in
-  let prices = Lwt_main.run prices_hyperion in
+  let prices_dc = Lwt_main.run prices_dc in
+  let prices = Lwt_main.run prices_server in
   let name = Lwt_main.run name in
 
   let json_prices_dc = Yojson.Basic.from_string prices_dc in
@@ -67,4 +68,4 @@ let () =
   let world_name = List.hd_exn listings_dc |> member "worldName" |> to_string in
   let timeSoldAgo = Core.Unix.strftime (Float.(-) (Unix.time()) mostRecent |> Unix.localtime) "%H:%M:%S" in
   let timeSold = Core.Unix.strftime (mostRecent |> Unix.localtime) "%m/%d/%Y, %H:%M:%S" in
-  print_endline ("Server: "^server^"   "^name_string^": \nCheapest on "^server^": " ^ cheapest ^ "\nCheapest on your Data Center: " ^ cheapest_dc^" on " ^ world_name^"\nLast sold on your server: " ^ timeSold ^ " (" ^ timeSoldAgo ^" ago)")
+  print_endline (name_string^": \nCheapest on "^server^": " ^ cheapest ^ "\nCheapest on your Data Center: " ^ cheapest_dc^" on " ^ world_name^"\nLast sold on your server: " ^ timeSold ^ " (" ^ timeSoldAgo ^" ago)")
