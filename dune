@@ -1,0 +1,6 @@
+(executable
+  ; (public_name client_example)
+  (name testing)
+  (libraries core
+  cohttp-lwt-unix
+  yojson))
