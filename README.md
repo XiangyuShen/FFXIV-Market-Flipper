@@ -1,7 +1,6 @@
 # FFXIV-Market-Flipper
 
 ## Table of contents
-(None So Far)
 * [General info](#general-info)
 * [Technologies](#technologies)
 * [Setup](#setup)
