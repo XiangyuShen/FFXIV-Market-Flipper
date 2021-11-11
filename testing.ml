@@ -67,4 +67,4 @@ let () =
   let world_name = List.hd_exn listings_dc |> member "worldName" |> to_string in
   let timeSoldAgo = Core.Unix.strftime (Float.(-) (Unix.time()) mostRecent |> Unix.localtime) "%H:%M:%S" in
   let timeSold = Core.Unix.strftime (mostRecent |> Unix.localtime) "%m/%d/%Y, %H:%M:%S" in
-  print_endline ("Server: "^server^"   "^name_string^": \nCheapest on Hyperion: " ^ cheapest ^ "\nCheapest on your Data Center: " ^ cheapest_dc^" on " ^ world_name^"\nLast sold on your server: " ^ timeSold ^ " (" ^ timeSoldAgo ^" ago)")
+  print_endline ("Server: "^server^"   "^name_string^": \nCheapest on "^server^": " ^ cheapest ^ "\nCheapest on your Data Center: " ^ cheapest_dc^" on " ^ world_name^"\nLast sold on your server: " ^ timeSold ^ " (" ^ timeSoldAgo ^" ago)")
