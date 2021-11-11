@@ -15,6 +15,7 @@ Project is created with:
 * Cohttp-async and Cohttp-lwt-unix libraries version: 4.0.0
 * Yojson library version: 1.7.0
 * Core library version: v0.14.1
+* Lwt_ssl library version 1.1.3 OR tls library version 0.15.1
 	
 ## Setup
 To run this project, clone or this repositiory locally, then run:
