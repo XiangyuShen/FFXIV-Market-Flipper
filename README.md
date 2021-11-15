@@ -24,13 +24,13 @@ To run this project, clone or this repositiory locally, then run:
 ```
 $ cd ../FFXIV-Market-Flipper
 $ dune build
-$ dune exec ./testing.exe {SERVER-NAME}
+$ dune exec ./testing.exe {SERVER-NAME} {ITEM-ID}
 ```
 
 ### Ocaml Native  
 ```
 $ cd ../FFXIV-Market-Flipper
 $ ocamlbuild -use-ocamlfind -tag thread -pkg cohttp-lwt-unix testing.native
-$ ./testing.native {SERVER-NAME}
+$ ./testing.native {SERVER-NAME} {ITEM-ID}
 ```
 Where {SERVER-NAME} is the name of the FFXIV server you want to sell on.
