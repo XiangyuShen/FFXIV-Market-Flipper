@@ -1,6 +1,7 @@
 (executable
   ; (public_name client_example)
   (name testing)
+  (preprocess (pps ppx_deriving_yojson))
   (libraries core
   cohttp-lwt-unix
   yojson))
