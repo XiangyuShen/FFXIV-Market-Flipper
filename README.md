@@ -18,7 +18,7 @@ Project is created with:
 * Lwt_ssl library version 1.1.3 OR tls library version 0.15.1
 	
 ## Setup
-To run this project, clone or this repositiory locally, then run:
+To run this project, clone or download this repositiory locally, then run:
 
 ### Dune
 ```
