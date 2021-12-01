@@ -27,10 +27,10 @@ let id_of_name (name:string): string =
     body
     in
   let open Yojson.Basic.Util in
-  Lwt_main.run req |> Yojson.Basic.from_string |> member "Results" |> to_string
+  Lwt_main.run req |> Yojson.Basic.from_string |> member "Results" |> to_list |> List.hd_exn |> member "Name" |> to_string
 
 (* Get prices on user's server*)
-let prices_on_server (server:string) (item:string): string =
+let prices_on_server (server:string) (item:string): listing =
   let req = Client.get (Uri.of_string ("https://universalis.app/api/"^server^"/"^item)) >>= fun (_, body) ->
     body |> Cohttp_lwt.Body.to_string >|= fun body ->
     body
@@ -38,19 +38,39 @@ let prices_on_server (server:string) (item:string): string =
   let open Yojson.Basic.Util in
   let listings = Lwt_main.run req |> Yojson.Basic.from_string |> member "listings" |> to_list
   in 
-  if (List.length listings = 0) then "0" else
-  List.hd_exn listings |> member "pricePerUnit" |> to_int |> Int.to_string
+  if (List.length listings = 0) then (0,0) else
+  (List.hd_exn listings |> member "pricePerUnit" |> to_int, List.hd_exn listings |> member "quantity" |> to_int)
 
 (* Deconstruct list of Yojson items to strings for specific API request result*)
+
+let rec deconstruct_helper (l:Yojson.Basic.t list): string list =
+  match l with
+  | [] -> []
+  | hd::tl -> (Yojson.Basic.Util.to_string hd |> String.lowercase) :: deconstruct_helper tl
 let deconstruct_json_string_list (l:Yojson.Basic.t list): string list =
+  deconstruct_helper l
 
 (* Find the data center that contains the server the user chose *)
-let find_dc (dcs: (string * Yojson.Basic.t) list) (server:string): string =
+let rec find_dc (dcs: (string * Yojson.Basic.t) list) ~(server:string): string =
+  match dcs with
+  | [] -> failwith "Invalid Server"
+  | hd::tl -> match hd with
+    | dc, servers -> if List.mem (Yojson.Basic.Util.to_list servers |> deconstruct_json_string_list) server ~equal:String.equal then dc else find_dc tl
 
 let get_dc (server:string): string =
+  let dc_req = Client.get (Uri.of_string ("https://xivapi.com/servers/dc")) >>= fun (_, body) ->
+    body |> Cohttp_lwt.Body.to_string >|= fun body ->
+    body
+    in 
+    Lwt_main.run dc_req |> Yojson.Basic.from_string |> Yojson.Basic.Util.to_assoc |> find_dc ~server:server
 
 (* Get prices on the user's data center*)
-let prices_on_dc (dc:string) (item:string): string =
+let prices_on_dc (dc:string) (item:string): listing * string =
+  let price_req = Client.get (Uri.of_string ("https://universalis.app/api/"^dc^"/"^item)) >>= fun (_, body) ->
+    body |> Cohttp_lwt.Body.to_string >|= fun body ->
+    body in
+  let open Yojson.Basic.Util in
+  Lwt_main.run price_req |> Yojson.Basic.from_string |> member "listings" |> to_list
 
 (* Overarching functions for user requests *)
 

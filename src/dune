@@ -1,17 +1,17 @@
-;(library
-;  (name market)
-;  (modules market)
-;  (preprocess (pps ppx_deriving_yojson))
-;  (libraries core
-;  cohttp-lwt-unix
-;  yojson))
+(library
+  (name market)
+  (modules market)
+  (preprocess (pps ppx_deriving_yojson))
+  (libraries core
+  cohttp-lwt-unix
+  yojson))
 
-;(executable
- ; (name flipper)
-  ;(modules flipper)
-  ;(preprocess (pps ppx_deriving_yojson))
-  ;(libraries
-  ;  market
-  ;  core
-  ;  yojson
-  ;  ppx_deriving_yojson.runtime))
+(executable
+  (name flipper)
+  (modules flipper)
+  (preprocess (pps ppx_deriving_yojson))
+  (libraries
+    market
+    core
+    yojson
+    ppx_deriving_yojson.runtime))
