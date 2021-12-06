@@ -55,7 +55,7 @@ let rec find_dc (dcs: (string * Yojson.Basic.t) list) ~(server:string): string =
   match dcs with
   | [] -> failwith "Invalid Server"
   | hd::tl -> match hd with
-    | dc, servers -> if List.mem (Yojson.Basic.Util.to_list servers |> deconstruct_json_string_list) server ~equal:String.equal then dc else find_dc tl
+    | dc, servers -> if List.mem (Yojson.Basic.Util.to_list servers |> deconstruct_json_string_list) server ~equal:String.equal then dc else find_dc tl ~server:server
 
 let get_dc (server:string): string =
   let dc_req = Client.get (Uri.of_string ("https://xivapi.com/servers/dc")) >>= fun (_, body) ->
@@ -70,7 +70,10 @@ let prices_on_dc (dc:string) (item:string): listing * string =
     body |> Cohttp_lwt.Body.to_string >|= fun body ->
     body in
   let open Yojson.Basic.Util in
-  Lwt_main.run price_req |> Yojson.Basic.from_string |> member "listings" |> to_list
+  let price = Lwt_main.run price_req |> Yojson.Basic.from_string |> member "listings" |> to_list |> List.hd_exn |> member "pricePerUnit" |> to_int in
+  let quant = Lwt_main.run price_req |> Yojson.Basic.from_string |> member "listings" |> to_list |> List.hd_exn |> member "quantity" |> to_int in
+  let world = Lwt_main.run price_req |> Yojson.Basic.from_string |> member "listings" |> to_list |> List.hd_exn |> member "worldName" |> to_string in
+  ((price, quant), world)
 
 (* Overarching functions for user requests *)
 

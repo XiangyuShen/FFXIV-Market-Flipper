@@ -1,0 +1,6 @@
+(test
+  (name tests)
+  (libraries
+    core
+    ounit2
+    market))
