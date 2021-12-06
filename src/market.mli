@@ -20,8 +20,9 @@ val id_of_name : name:string -> string
 (* Get prices on user's server*)
 val prices_on_server : server:string -> item:string -> listing
 
-(* Deconstruct list of Yojson items to strings for specific API request result*)
+(* Deconstruct list of Yojson items to strings/ints for specific API request result*)
 val deconstruct_json_string_list: l:(Yojson.Basic.t list) -> string list
+val deconstruct_json_int_list: l:(Yojson.Basic.t list) -> int list
 
 (* Find the data center that contains the server the user chose *)
 val get_dc: server:string -> string

@@ -43,12 +43,11 @@ let prices_on_server (server:string) (item:string): listing =
 
 (* Deconstruct list of Yojson items to strings for specific API request result*)
 
-let rec deconstruct_helper (l:Yojson.Basic.t list): string list =
-  match l with
-  | [] -> []
-  | hd::tl -> (Yojson.Basic.Util.to_string hd |> String.lowercase) :: deconstruct_helper tl
-let deconstruct_json_string_list (l:Yojson.Basic.t list): string list =
-  deconstruct_helper l
+let deconstruct_json_string_list (l: Yojson.Basic.t list): string list =
+  List.fold_left l ~init:[] ~f:(fun acc x -> (Yojson.Basic.Util.to_string x |> String.lowercase)::acc)
+
+let deconstruct_json_int_list (l: Yojson.Basic.t list): int list =
+  List.fold_left l ~init:[] ~f:(fun acc x -> (Yojson.Basic.Util.to_int x)::acc)
 
 (* Find the data center that contains the server the user chose *)
 let rec find_dc (dcs: (string * Yojson.Basic.t) list) ~(server:string): string =
@@ -70,9 +69,10 @@ let prices_on_dc (dc:string) (item:string): listing * string =
     body |> Cohttp_lwt.Body.to_string >|= fun body ->
     body in
   let open Yojson.Basic.Util in
-  let price = Lwt_main.run price_req |> Yojson.Basic.from_string |> member "listings" |> to_list |> List.hd_exn |> member "pricePerUnit" |> to_int in
-  let quant = Lwt_main.run price_req |> Yojson.Basic.from_string |> member "listings" |> to_list |> List.hd_exn |> member "quantity" |> to_int in
-  let world = Lwt_main.run price_req |> Yojson.Basic.from_string |> member "listings" |> to_list |> List.hd_exn |> member "worldName" |> to_string in
+  let top_listing = Lwt_main.run price_req |> Yojson.Basic.from_string |> member "listings" |> to_list |> List.hd_exn in
+  let price =  top_listing |> member "pricePerUnit" |> to_int in
+  let quant = top_listing |> member "quantity" |> to_int in
+  let world = top_listing |> member "worldName" |> to_string in
   ((price, quant), world)
 
 (* Overarching functions for user requests *)
@@ -81,12 +81,22 @@ let prices_on_dc (dc:string) (item:string): listing * string =
 let init (server:string): _ =
 (* Grab all prices and process *)
 let update (server:string): _ =
+  let market_req = Client.get (Uri.of_string ("https://universalis.app/api/marketable")) >>= fun (_, body) ->
+    body |> Cohttp_lwt.Body.to_string >|= fun body ->
+    body in
+  let open Yojson.Basic.Util in
+  let marketable = Lwt_main.run market_req |> Yojson.Basic.from_string |> to_list |> deconstruct_json_int_list in
+  let item_list = List.fold_left marketable ~init:[] ~f:(fun acc x -> (prices_on_server "hyperion" @@ Int.to_string x)::acc) in
+  write_data item_list
+
 (* Grab listings with user specified conditions*)
 let listing (flags:string list): _ = 
 
 
 (*Calculate margins for each item*)
 let calculate_margins (item:string) (home:int) (dc:int): margin =
+  let raw = home - dc in
+  (raw, (Float.(/) (Float.of_int raw) (Float.of_int home)))
 
 (*Read data from file*)
 let read_data _: item list =

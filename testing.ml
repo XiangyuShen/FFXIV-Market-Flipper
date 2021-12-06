@@ -26,10 +26,11 @@ let prices_server =
   body |> Cohttp_lwt.Body.to_string >|= fun body ->
   body
 
-let rec deconstruct_json_string_list (l: Yojson.Basic.t list): string list =
-  match l with
-  | [] -> []
-  | hd::tl -> (Yojson.Basic.Util.to_string hd |> String.lowercase) :: deconstruct_json_string_list tl
+let deconstruct_json_string_list (l: Yojson.Basic.t list): string list =
+  List.fold_left l ~init:[] ~f:(fun acc x -> (Yojson.Basic.Util.to_string x |> String.lowercase)::acc)
+
+  let deconstruct_json_int_list (l: Yojson.Basic.t list): int list =
+    List.fold_left l ~init:[] ~f:(fun acc x -> (Yojson.Basic.Util.to_int x)::acc)
 
 let rec check_dc (dcs: (string * Yojson.Basic.t) list): string =
   match dcs with
@@ -53,16 +54,22 @@ let rec check_dc (dcs: (string * Yojson.Basic.t) list): string =
       body |> Cohttp_lwt.Body.to_string >|= fun body ->
       body
 
+      let market_req = Client.get (Uri.of_string ("https://universalis.app/api/marketable")) >>= fun (_, body) ->
+        body |> Cohttp_lwt.Body.to_string >|= fun body ->
+        body
+
 let () =
   let prices_dc = Lwt_main.run prices_dc in
   let prices = Lwt_main.run prices_server in
   let name = Lwt_main.run name in
   let id_from_name = Lwt_main.run req in
+  let marketable = Lwt_main.run market_req in
 
   let json_prices_dc = Yojson.Basic.from_string prices_dc in
   let json_prices = Yojson.Basic.from_string prices in
   let json_name = Yojson.Basic.from_string name in
   let json_id = Yojson.Basic.from_string id_from_name in
+  let json_market = Yojson.Basic.from_string marketable in
 
   let open Yojson.Basic.Util in
   let listings = json_prices |> member "listings" |> to_list in
@@ -76,5 +83,6 @@ let () =
   let timeSoldAgo = Core.Unix.strftime (Float.(-) (Unix.time()) mostRecent |> Unix.localtime) "%H:%M:%S" in
   let timeSold = Core.Unix.strftime (mostRecent |> Unix.localtime) "%m/%d/%Y, %H:%M:%S" in
   let item_id_from_name = json_id |> member "Results" |> to_list |> List.hd_exn |> member "Name" |> to_string in
+  let market =  json_market |> to_list |> deconstruct_json_int_list |> List.rev in
 
-  print_endline (item_id_from_name^"   " ^name_string^": \nCheapest on "^server^": " ^ cheapest ^ "\nCheapest on your Data Center: " ^ cheapest_dc^" on " ^ world_name^"\nLast sold on your server: " ^ timeSold ^ " (" ^ timeSoldAgo ^" ago)")
+  print_endline ((Int.to_string @@ List.hd_exn market)^item_id_from_name^"   " ^name_string^": \nCheapest on "^server^": " ^ cheapest ^ "\nCheapest on your Data Center: " ^ cheapest_dc^" on " ^ world_name^"\nLast sold on your server: " ^ timeSold ^ " (" ^ timeSoldAgo ^" ago)")
