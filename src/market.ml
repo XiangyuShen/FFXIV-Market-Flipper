@@ -19,10 +19,10 @@ let calculate_margins (item:string) (home:int) (dc:int): margin =
   (raw, (Float.(/) (Float.of_int raw) (Float.of_int home)))
 
 (*Read data from file*)
-let read_data _: item list =
+let [@coverage off] read_data _: item list =
   failwith "unimplemented"
 (*Save data to file*)
-let write_data item list: _ =
+let [@coverage off] write_data item list: _ =
   failwith "unimplemented"
 
 
@@ -44,7 +44,7 @@ let id_of_name (name:string): string =
   Lwt_main.run req |> Yojson.Basic.from_string |> member "Results" |> to_list |> List.hd_exn |> member "Name" |> to_string
 
 (* Get prices on user's server*)
-let prices_on_server (server:string) (item:string): listing =
+let [@coverage off] prices_on_server (server:string) (item:string): listing =
   let req = Client.get (Uri.of_string ("https://universalis.app/api/"^server^"/"^item)) >>= fun (_, body) ->
     body |> Cohttp_lwt.Body.to_string >|= fun body ->
     body
@@ -78,7 +78,7 @@ let get_dc (server:string): string =
     Lwt_main.run dc_req |> Yojson.Basic.from_string |> Yojson.Basic.Util.to_assoc |> find_dc ~server:server
 
 (* Get prices on the user's data center*)
-let prices_on_dc (dc:string) (item:string): listing * string =
+let [@coverage off] prices_on_dc (dc:string) (item:string): listing * string =
   let price_req = Client.get (Uri.of_string ("https://universalis.app/api/"^dc^"/"^item)) >>= fun (_, body) ->
     body |> Cohttp_lwt.Body.to_string >|= fun body ->
     body in
@@ -92,11 +92,11 @@ let prices_on_dc (dc:string) (item:string): listing * string =
 (* Overarching functions for user requests *)
 
 (* Initialize user server and create storage file *)
-let init (server:string): _ =
+let [@coverage off] init (server:string): _ =
   failwith "unimplemented"
 
 (* Grab all prices and process *)
-let update (server:string): _ =
+let [@coverage off] update (server:string): _ =
   failwith "unimplemented";
   let market_req = Client.get (Uri.of_string ("https://universalis.app/api/marketable")) >>= fun (_, body) ->
     body |> Cohttp_lwt.Body.to_string >|= fun body ->
@@ -108,5 +108,5 @@ let update (server:string): _ =
   
 
 (* Grab listings with user specified conditions*)
-let listing (flags:string list): _ = 
+let [@coverage off] listing (flags:string list): _ = 
   failwith "unimplemented"
