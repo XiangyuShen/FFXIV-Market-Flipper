@@ -4,6 +4,7 @@
 * [General info](#general-info)
 * [Technologies](#technologies)
 * [Setup](#setup)
+* [Usage](#usage)
 
 ## General info
 Application to find the best goods to flip for profit on the FFXIV marketboard.
