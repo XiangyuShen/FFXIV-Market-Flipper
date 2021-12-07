@@ -4,18 +4,20 @@
 * [General info](#general-info)
 * [Technologies](#technologies)
 * [Setup](#setup)
+* [Usage](#usage)
 
 ## General info
-Application to find the best goods to flip for profit in FFXIV.
+Application to find the best goods to flip for profit on the FFXIV marketboard.
 	
 ## Technologies
 Project is created with:
-* Ocaml version: 4.12.0
-* Dune version: 2.9
-* Cohttp-async and Cohttp-lwt-unix libraries version: 4.0.0
-* Yojson library version: 1.7.0
-* Core library version: v0.14.1
-* Lwt_ssl library version 1.1.3 OR tls library version 0.15.1
+* Ocaml: 4.12.0
+* Dune: 2.9
+* Cohttp-async: 4.0.0
+* Cohttp-lwt-unix: 4.0.0
+* Yojson: 1.7.0
+* Core library: v0.14.1
+* Lwt_ssl library 1.1.3 OR tls library 0.15.1
 	
 ## Setup
 To run this project, clone or download this repositiory locally, then run:
@@ -24,13 +26,21 @@ To run this project, clone or download this repositiory locally, then run:
 ```
 $ cd ../FFXIV-Market-Flipper
 $ dune build
-$ dune exec ./testing.exe {SERVER-NAME} {ITEM-ID}
-```
-
-### Ocaml Native  
-```
-$ cd ../FFXIV-Market-Flipper
-$ ocamlbuild -use-ocamlfind -tag thread -pkg cohttp-lwt-unix testing.native
-$ ./testing.native {SERVER-NAME} {ITEM-ID}
+$ dune exec ./flipper.exe init {SERVER-NAME}
+$ dune exec ./flipper.exe update
 ```
 Where {SERVER-NAME} is the name of the FFXIV server you want to sell on.
+
+## Usage
+
+### Single-item Lookup
+```
+$ dune exec ./flipper.exe {ITEM-NAME/ITEM-ID}
+```
+
+### Multi-Lookup
+```
+$ dune exec ./flipper.exe listings
+$ dune exec ./flipper.exe listings --margin
+$ dune exec ./flipper.exe listings --stacks
+```
