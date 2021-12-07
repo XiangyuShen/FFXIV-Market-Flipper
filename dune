@@ -1,5 +1,5 @@
 (executable
-  ; (public_name client_example)
+  ; (public_name ffxiv_flipper)
   (name testing)
   (preprocess (pps ppx_deriving_yojson))
   (libraries core
