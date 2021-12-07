@@ -68,7 +68,7 @@ let deconstruct_json_int_list (l: Yojson.Basic.t list): int list =
 (* Find the data center that contains the server the user chose *)
 let rec find_dc (dcs: (string * Yojson.Basic.t) list) ~(server:string): string =
   match dcs with
-  | [] -> failwith "Invalid Server"
+  | [] -> failwith "Invalid Server" [@coverage off]
   | hd::tl -> match hd with
     | dc, servers -> if List.mem (Yojson.Basic.Util.to_list servers |> deconstruct_json_string_list) server ~equal:String.equal then dc else find_dc tl ~server:server
 

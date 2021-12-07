@@ -1,7 +1,9 @@
 (library
   (name market)
   (modules market)
-  (preprocess (pps ppx_deriving_yojson))
+  (preprocess 
+    (pps ppx_deriving_yojson
+    bisect_ppx))
   (libraries core
   cohttp-lwt-unix
   yojson))

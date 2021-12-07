@@ -5,3 +5,16 @@
   (libraries core
   cohttp-lwt-unix
   yojson))
+
+(rule
+  (target project.zip)
+  (deps 
+    src/flipper.ml
+    src/market.ml
+    src/market.mli
+    src/dune
+    tests/tests.ml
+    tests/dune
+  )
+  (action
+    (run zip -R project.zip %{deps})))

@@ -21,7 +21,7 @@ let invariant_id_and_name _ =
 let test_calculate_margins _ =
   assert_equal (calculate_margins ~home:4 ~dc:2) (2,1.);
   assert_equal (calculate_margins ~home:30000 ~dc:5000) (25000,5.);
-  assert_equal (calculate_margins ~home:35000000 ~dc:100000000) (2500000,2.5)
+  assert_equal (calculate_margins ~home:35000000 ~dc:10000000) (25000000,2.5)
 
 let test_deconstruct_json_string_list _ =
   let temp = Yojson.Basic.from_string "[ \"a\", \"b\", \"c\", \"d\" ]" |> Yojson.Basic.Util.to_list in
