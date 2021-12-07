@@ -6,7 +6,7 @@
 * [Setup](#setup)
 
 ## General info
-Application to find the best goods to flip for profit in FFXIV.
+Application to find the best goods to flip for profit on the FFXIV marketboard.
 	
 ## Technologies
 Project is created with:
@@ -24,13 +24,21 @@ To run this project, clone or download this repositiory locally, then run:
 ```
 $ cd ../FFXIV-Market-Flipper
 $ dune build
-$ dune exec ./testing.exe {SERVER-NAME} {ITEM-ID}
-```
-
-### Ocaml Native  
-```
-$ cd ../FFXIV-Market-Flipper
-$ ocamlbuild -use-ocamlfind -tag thread -pkg cohttp-lwt-unix testing.native
-$ ./testing.native {SERVER-NAME} {ITEM-ID}
+$ dune exec ./flipper.exe init {SERVER-NAME}
+$ dune exec ./flipper.exe update
 ```
 Where {SERVER-NAME} is the name of the FFXIV server you want to sell on.
+
+## Usage
+
+### Single-item Lookup
+```
+$ dune exec ./flipper.exe {ITEM-NAME/ITEM-ID}
+```
+
+### Multi-Lookup
+```
+$ dune exec ./flipper.exe listings
+$ dune exec ./flipper.exe listings --margin
+$ dune exec ./flipper.exe listings --stacks
+```
