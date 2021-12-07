@@ -29,11 +29,11 @@ val id_of_name : name:string -> string
 val prices_on_server : server:string -> item:string -> listing
 
 (* Deconstruct list of Yojson items to strings/ints for specific API request result*)
-val deconstruct_json_string_list: l:(Yojson.Basic.t list) -> string list
-val deconstruct_json_int_list: l:(Yojson.Basic.t list) -> int list
+val deconstruct_json_string_list: (Yojson.Basic.t list) -> string list
+val deconstruct_json_int_list: (Yojson.Basic.t list) -> int list
 
 (* Find the data center that contains the server the user chose *)
-val get_dc: server:string -> string
+val get_dc: string -> string
 
 (* Get prices on the user's data center*)
 val prices_on_dc: dc:string -> item:string -> listing * string
@@ -41,8 +41,8 @@ val prices_on_dc: dc:string -> item:string -> listing * string
 (* Overarching functions for user requests *)
 
 (* Initialize user server and create storage file *)
-val init: server:string -> _
+val init: string -> _
 (* Grab all prices and process *)
-val update: server:string -> _
+val update: string -> _
 (* Grab listings with user specified conditions*)
-val listing: flags:string list -> _
+val listing: string list -> _

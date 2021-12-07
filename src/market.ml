@@ -2,6 +2,8 @@ open Core
 open Lwt
 open Cohttp_lwt_unix
 
+[@@@ocaml.warning "-27"]
+
 (* Raw margin, then percent margin*)
 type margin = (int * float)
 
@@ -14,7 +16,7 @@ type item = (string * listing * listing * string * int * margin)
 
 
 (*Calculate margins for each item*)
-let calculate_margins (home:int) (dc:int): margin =
+let calculate_margins ~home:(home:int) ~dc:(dc:int): margin =
   let raw = home - dc in
   (raw, (Float.(/) (Float.of_int raw) (Float.of_int home)))
 
@@ -22,12 +24,12 @@ let calculate_margins (home:int) (dc:int): margin =
 let [@coverage off] read_data _: item list =
   failwith "unimplemented"
 (*Save data to file*)
-let [@coverage off] write_data item list: _ =
+let [@coverage off] write_data (l:item list): _ =
   failwith "unimplemented"
 
 
 (* Translate item name to id and vice versa *)
-let name_of_id (id:string): string =
+let name_of_id ~id:(id:string): string =
   let req = Client.get (Uri.of_string ("https://xivapi.com/item/"^id)) >>= fun (_, body) ->
     body |> Cohttp_lwt.Body.to_string >|= fun body ->
     body
@@ -35,7 +37,7 @@ let name_of_id (id:string): string =
   let open Yojson.Basic.Util in
   Lwt_main.run req |> Yojson.Basic.from_string |> member "Name" |> to_string
 
-let id_of_name (name:string): string = 
+let id_of_name ~name:(name:string): string = 
   let req = Client.get (Uri.of_string ("https://xivapi.com/search?string="^name)) >>= fun (_, body) ->
     body |> Cohttp_lwt.Body.to_string >|= fun body ->
     body
@@ -44,7 +46,7 @@ let id_of_name (name:string): string =
   Lwt_main.run req |> Yojson.Basic.from_string |> member "Results" |> to_list |> List.hd_exn |> member "Name" |> to_string
 
 (* Get prices on user's server*)
-let [@coverage off] prices_on_server (server:string) (item:string): listing =
+let [@coverage off] prices_on_server ~server:(server:string) ~item:(item:string): listing =
   let req = Client.get (Uri.of_string ("https://universalis.app/api/"^server^"/"^item)) >>= fun (_, body) ->
     body |> Cohttp_lwt.Body.to_string >|= fun body ->
     body
@@ -78,7 +80,7 @@ let get_dc (server:string): string =
     Lwt_main.run dc_req |> Yojson.Basic.from_string |> Yojson.Basic.Util.to_assoc |> find_dc ~server:server
 
 (* Get prices on the user's data center*)
-let [@coverage off] prices_on_dc (dc:string) (item:string): listing * string =
+let [@coverage off] prices_on_dc ~dc:(dc:string) ~item:(item:string): listing * string =
   let price_req = Client.get (Uri.of_string ("https://universalis.app/api/"^dc^"/"^item)) >>= fun (_, body) ->
     body |> Cohttp_lwt.Body.to_string >|= fun body ->
     body in
@@ -97,14 +99,14 @@ let [@coverage off] init (server:string): _ =
 
 (* Grab all prices and process *)
 let [@coverage off] update (server:string): _ =
-  failwith "unimplemented";
-  let market_req = Client.get (Uri.of_string ("https://universalis.app/api/marketable")) >>= fun (_, body) ->
+  failwith "unimplemented"
+  (*let market_req = Client.get (Uri.of_string ("https://universalis.app/api/marketable")) >>= fun (_, body) ->
     body |> Cohttp_lwt.Body.to_string >|= fun body ->
     body in
   let open Yojson.Basic.Util in
   let marketable = Lwt_main.run market_req |> Yojson.Basic.from_string |> to_list |> deconstruct_json_int_list in
   let item_list = List.fold_left marketable ~init:[] ~f:(fun acc x -> (prices_on_server "hyperion" @@ Int.to_string x)::acc) in
-  write_data item_list
+  write_data item_list*)
   
 
 (* Grab listings with user specified conditions*)
