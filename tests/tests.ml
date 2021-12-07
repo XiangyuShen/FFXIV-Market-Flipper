@@ -25,11 +25,11 @@ let test_calculate_margins _ =
 
 let test_deconstruct_json_string_list _ =
   let temp = Yojson.Basic.from_string "[ \"a\", \"b\", \"c\", \"d\" ]" |> Yojson.Basic.Util.to_list in
-  assert_equal (deconstruct_json_string_list temp) ["a";"b";"c";"d"]
+  assert_equal (deconstruct_json_string_list temp) ["d";"c";"b";"a"]
 
 let test_deconstruct_json_int_list _ =
   let temp = Yojson.Basic.from_string "[ 1, 2, 3, 4 ]" |> Yojson.Basic.Util.to_list in
-  assert_equal (deconstruct_json_int_list temp) [1;2;3;4];;
+  assert_equal (deconstruct_json_int_list temp) [4;3;2;1];;
 
 let test_get_dc _ =
   assert_equal "Primal" @@ get_dc "hyperion";
