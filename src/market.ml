@@ -43,7 +43,7 @@ let id_of_name ~name:(name:string): string =
     body
     in
   let open Yojson.Basic.Util in
-  Lwt_main.run req |> Yojson.Basic.from_string |> member "Results" |> to_list |> List.hd_exn |> member "Name" |> to_string
+  Lwt_main.run req |> Yojson.Basic.from_string |> member "Results" |> to_list |> List.hd_exn |> member "ID" |> to_int |> Int.to_string
 
 (* Get prices on user's server*)
 let [@coverage off] prices_on_server ~server:(server:string) ~item:(item:string): listing =
