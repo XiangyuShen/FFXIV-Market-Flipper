@@ -18,7 +18,7 @@ type item = (string * listing * listing * string * int * margin)
 (*Calculate margins for each item*)
 let calculate_margins ~home:(home:int) ~dc:(dc:int): margin =
   let raw = home - dc in
-  (raw, (Float.(/) (Float.of_int raw) (Float.of_int home)))
+  (raw, (Float.(/) (Float.of_int raw) (Float.of_int dc)))
 
 (*Read data from file*)
 let [@coverage off] read_data _: item list =
