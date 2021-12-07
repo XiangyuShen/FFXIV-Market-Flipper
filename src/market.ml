@@ -110,38 +110,3 @@ let update (server:string): _ =
 (* Grab listings with user specified conditions*)
 let listing (flags:string list): _ = 
   failwith "unimplemented"
-
-
-
-let name =
-  Client.get (Uri.of_string ("https://xivapi.com/item/"^item_id)) >>= fun (_, body) ->
-  body |> Cohttp_lwt.Body.to_string >|= fun body ->
-  body
-
-let prices_server =
-  Client.get (Uri.of_string ("https://universalis.app/api/"^server^"/"^item_id )) >>= fun (_, body) ->
-  body |> Cohttp_lwt.Body.to_string >|= fun body ->
-  body
-
-let rec deconstruct_json_string_list (l: Yojson.Basic.t list): string list =
-  match l with
-  | [] -> []
-  | hd::tl -> (Yojson.Basic.Util.to_string hd |> String.lowercase) :: deconstruct_json_string_list tl
-
-let rec check_dc (dcs: (string * Yojson.Basic.t) list): string =
-  match dcs with
-  | [] -> failwith "Invalid Server"
-  | hd::tl -> match hd with
-    | dc, servers -> if List.mem (Yojson.Basic.Util.to_list servers |> deconstruct_json_string_list) server ~equal:String.equal then dc else check_dc tl
-
-  let prices_dc =
-    let dc_req = Client.get (Uri.of_string ("https://xivapi.com/servers/dc")) >>= fun (_, body) ->
-      body |> Cohttp_lwt.Body.to_string >|= fun body ->
-      body
-      in 
-      let dc =
-      Lwt_main.run dc_req |> Yojson.Basic.from_string |> Yojson.Basic.Util.to_assoc |> check_dc in
-    (*NOW MATCH SERVER TO DC*)
-    Client.get (Uri.of_string ("https://universalis.app/api/"^dc^"/"^item_id)) >>= fun (_, body) ->
-    body |> Cohttp_lwt.Body.to_string >|= fun body ->
-    body
