@@ -12,6 +12,14 @@ type item = (string * listing * listing * string * int * margin)
 calls for listings. Depending on how this goes, we may instead choose 
 a sorted list or binary tree of some sort and sort during update*)
 
+(*Calculate margins for each item*)
+val calculate_margins: home:int -> dc:int -> margin
+
+(*Read data from file*)
+val read_data: _ -> item list
+(*Save data to file*)
+val write_data: item list -> _
+
 (* Translate item name to id and vice versa *)
 val name_of_id : id:string -> string
 
@@ -38,12 +46,3 @@ val init: server:string -> _
 val update: server:string -> _
 (* Grab listings with user specified conditions*)
 val listing: flags:string list -> _
-
-
-(*Calculate margins for each item*)
-val calculate_margins: item:string -> home:int -> dc:int -> margin
-
-(*Read data from file*)
-val read_data: _ -> item list
-(*Save data to file*)
-val write_data: item list -> _

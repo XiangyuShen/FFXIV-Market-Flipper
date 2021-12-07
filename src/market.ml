@@ -14,7 +14,7 @@ type item = (string * listing * listing * string * int * margin)
 
 
 (*Calculate margins for each item*)
-let calculate_margins (item:string) (home:int) (dc:int): margin =
+let calculate_margins (home:int) (dc:int): margin =
   let raw = home - dc in
   (raw, (Float.(/) (Float.of_int raw) (Float.of_int home)))
 
