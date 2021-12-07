@@ -10,12 +10,13 @@ Application to find the best goods to flip for profit on the FFXIV marketboard.
 	
 ## Technologies
 Project is created with:
-* Ocaml version: 4.12.0
-* Dune version: 2.9
-* Cohttp-async and Cohttp-lwt-unix libraries version: 4.0.0
-* Yojson library version: 1.7.0
-* Core library version: v0.14.1
-* Lwt_ssl library version 1.1.3 OR tls library version 0.15.1
+* Ocaml: 4.12.0
+* Dune: 2.9
+* Cohttp-async: 4.0.0
+* Cohttp-lwt-unix: 4.0.0
+* Yojson: 1.7.0
+* Core library: v0.14.1
+* Lwt_ssl library 1.1.3 OR tls library 0.15.1
 	
 ## Setup
 To run this project, clone or download this repositiory locally, then run:
