@@ -4,16 +4,34 @@ open Cohttp_lwt_unix
 
 [@@@ocaml.warning "-27"]
 
+let xiv_URL = "https://xivapi.com/"
+
+let univ_URL = "https://universalis.app/api/"
+
 (* Raw margin, then percent margin*)
-type margin = (int * float)
+type margin = (int * float) [@@deriving yojson]
 
 (*Price, quantity*)
-type listing = (int * int)
+type listing = (int * int) [@@deriving yojson]
 
 (* Name, lowest listing on server, lowest listing on data center, 
 lowest price server name, date last sold on server, margin*)
-type item = (string * listing * listing * string * int * margin)
+type item = (string * listing * listing * string * int * margin) [@@deriving yojson]
 
+
+(* Deconstruct list of Yojson items*)
+
+let deconstruct_json_string_list (l: Yojson.Basic.t list): string list =
+  List.fold_left l ~init:[] ~f:(fun acc x -> (Yojson.Basic.Util.to_string x |> String.lowercase)::acc)
+
+let deconstruct_json_int_list (l: Yojson.Basic.t list): int list =
+  List.fold_left l ~init:[] ~f:(fun acc x -> (Yojson.Basic.Util.to_int x)::acc)
+
+let deconstruct_json_item_list (l: Yojson.Safe.t list): item list =
+  List.fold_left l ~init:[] ~f:(fun acc x -> 
+    match item_of_yojson x with
+    | Ok(item) -> item::acc
+    | Error msg -> failwith "Error Reading In Data")
 
 (*Calculate margins for each item*)
 let calculate_margins ~home:(home:int) ~dc:(dc:int): margin =
@@ -21,12 +39,25 @@ let calculate_margins ~home:(home:int) ~dc:(dc:int): margin =
   (raw, (Float.(/) (Float.of_int raw) (Float.of_int dc)))
 
 (*Read data from file*)
+let read_file filename =
+  let file = In_channel.create filename in
+  let strings = In_channel.input_all file in
+  In_channel.close file;
+  strings
+
+let write_file filename message =
+  let oc = Out_channel.create filename in
+  Printf.fprintf oc "%s\n" message;
+  Out_channel.close oc
+
 let [@coverage off] read_data _: item list =
-  failwith "unimplemented"
+  let data = read_file "data.txt" in
+  deconstruct_json_item_list (Yojson.Safe.Util.to_list @@ Yojson.Safe.from_string data)
+
 (*Save data to file*)
 let [@coverage off] write_data (l:item list): _ =
-  failwith "unimplemented"
-
+  write_file "data.txt" @@ List.to_string l ~f:(fun a -> 
+  Yojson.Safe.to_string @@ item_to_yojson a)
 
 (* Translate item name to id and vice versa *)
 let name_of_id ~id:(id:string): string =
@@ -56,14 +87,6 @@ let [@coverage off] prices_on_server ~server:(server:string) ~item:(item:string)
   in 
   if (List.length listings = 0) then (0,0) else
   (List.hd_exn listings |> member "pricePerUnit" |> to_int, List.hd_exn listings |> member "quantity" |> to_int)
-
-(* Deconstruct list of Yojson items to strings for specific API request result*)
-
-let deconstruct_json_string_list (l: Yojson.Basic.t list): string list =
-  List.fold_left l ~init:[] ~f:(fun acc x -> (Yojson.Basic.Util.to_string x |> String.lowercase)::acc)
-
-let deconstruct_json_int_list (l: Yojson.Basic.t list): int list =
-  List.fold_left l ~init:[] ~f:(fun acc x -> (Yojson.Basic.Util.to_int x)::acc)
 
 (* Find the data center that contains the server the user chose *)
 let rec find_dc (dcs: (string * Yojson.Basic.t) list) ~(server:string): string =
@@ -95,7 +118,7 @@ let [@coverage off] prices_on_dc ~dc:(dc:string) ~item:(item:string): listing * 
 
 (* Initialize user server and create storage file *)
 let [@coverage off] init (server:string): _ =
-  failwith "unimplemented"
+  write_file "server.txt" server
 
 (* Grab all prices and process *)
 let [@coverage off] update (server:string): _ =
