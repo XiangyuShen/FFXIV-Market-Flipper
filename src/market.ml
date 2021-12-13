@@ -154,34 +154,45 @@ let [@coverage off] init (server:string): _ =
  
 (* Grab all prices and process *)
 let [@coverage off] update (server:string): _ =
-  failwith "unimplemented"
-  (*let market_req = Client.get (Uri.of_string (univ_URL^"marketable")) >>= fun (_, body) ->
+  let market_req = Client.get (Uri.of_string (univ_URL^"marketable")) >>= fun (_, body) ->
     body |> Cohttp_lwt.Body.to_string >|= fun body ->
     body in
   let open Yojson.Basic.Util in
-  let marketable = Lwt_main.run market_req |> Yojson.Basic.from_string |> to_list |> deconstruct_json_int_list in
-  let item_list = List.fold_left marketable ~init:[] ~f:(fun acc x -> (prices_on_server "hyperion" @@ Int.to_string x)::acc) in
-  write_data item_list*)
+  let marketable = Lwt_main.run market_req |> Yojson.Basic.from_string 
+    |> to_list |> deconstruct_json_int_list in
+  let item_list = List.fold_left marketable ~init:[] ~f:(fun acc x -> 
+    let id = Int.to_string x in
+    let name = name_of_id ~id:id in
+    let ((servp, servq), date) = prices_on_server ~server:server ~item:id in
+    let dc = get_dc server in 
+    let ((dcp, dcq), lowest) = prices_on_dc ~dc:dc ~item:id in
+    let margin = calculate_margins ~home:servp ~dc:dcq in
+    (name, (servp, servq), (dcp, dcq), lowest, date, margin)::acc) 
+  in
+  write_data item_list
   
 (* Helper function to write listings to command line*)
-let [@coverage off] listing_helper (filename: string) (margin: bool) (stacks: bool): _ =
+let [@coverage off] listing_helper (filename: string) (margin: int) (server_name: string): unit =
   let temp,_ = List.split_n (read_data filename) 4 in
-  List.fold temp ~init:0 ~f:(fun acc x -> 
+  let printable = List.fold temp ~init:"" ~f:(fun acc x -> 
     let (name,(servp, servq),(dcp, dcq), lowest, date,(raw, percent)) = x in
-    if margin 
-      then if stacks
-        then Printf.printf ""
-        else
-    else if stacks
-      then
-      else
-    then Printf.printf "%s\n" (item_to_yojson x |> Yojson.Safe.to_string); 0)
-(* Grab listings with user specified conditions*)
-let [@coverage off] listing (flags:bool list): _ = 
-try let server = read_File "server.txt" in
-  if List.length flags < 2 
-    then if List.nth_exn flags 0
-      then listing_helper "margins.txt" true false
-      else listing_helper "percents.txt" false false
-    else
-with _ -> print_endline "Please run init first"
+    if margin = 0 then
+        acc ^ "| " ^ server_name ^ ": " ^ name ^ " " ^ (Int.to_string servp) ^
+        " | " ^ lowest ^ ": " ^ name ^ " "^ (Int.to_string dcp) ^ " |"
+    else if margin = 1 then 
+      acc ^ "| " ^ server_name ^ ": " ^ name ^ " " ^ (Int.to_string servp) ^
+        " | " ^ lowest ^ ": " ^ name ^ " "^ (Int.to_string dcp) ^ " |"
+    else acc ^ "| " ^ server_name ^ ": " ^ name ^ " " ^ (Int.to_string servp) ^ " " ^ (Int.to_string servq) 
+        ^ " | " ^ lowest ^ ": " ^ name ^ " "^ (Int.to_string dcp) ^ " " ^ (Int.to_string dcq) ^ " |")
+  in
+  print_endline printable
+(* Grab listings with user specified conditions, flags contains an int
+  1 being margin, 2 being stacks, and 0 being raw*)
+let [@coverage off] listing (flags: int): unit = 
+try let server = read_file "server.txt" in
+  if flags = 0
+    then listing_helper "stacks.txt" flags server
+  else if flags = 1
+    then listing_helper "margins.txt" flags server
+  else listing_helper "stacks.txt" flags server 
+with _ -> print_endline "Please run init and update first"
