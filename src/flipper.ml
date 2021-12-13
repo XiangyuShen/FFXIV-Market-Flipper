@@ -1,6 +1,32 @@
 open Core
 open Market
 
+let args = (Sys.get_argv())
+let call = Array.get args 1
+
 let () =
-let (raw, _) = calculate_margins ~home:2 ~dc:4 in
-failwith ("unimplemented"^(Int.to_string raw))
+if String.(=) "init" call then
+  try let server = Array.get args 2 in
+    init server
+  with _ -> print_endline "Please init with a valid server name."
+else if String.(=) "update" call then
+  print_string "Loading...\n";
+  update;
+  print_endline "Complete!"
+else if String.(=) "listings" call then
+  try let flag = Array.get args 2 in
+    if String.(=) "--margin" flag then
+      listing 1
+    else if String.(=) "--stacks" flag then
+      listing 1
+    else 
+      print_endline "Please enter a valid flag.\n
+      You can use --margin, --stacks, or none at all!"
+  with _ -> 
+    listing 0
+else
+  try let id = Int.of_string call in
+    single id
+  with _ ->
+    let id = id_of_name in 
+      single @@ Int.of_string id
