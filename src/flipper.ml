@@ -15,9 +15,15 @@ else if String.(=) "update" call then
   print_endline "Complete!"
 else if String.(=) "listings" call then
   try let flag = Array.get args 2 in
-    listing [String.(=) "--margin" flag]
+    if String.(=) "--margin" flag then
+      listing 1
+    else if String.(=) "--stacks" flag then
+      listing 1
+    else 
+      print_endline "Please enter a valid flag.\n
+      You can use --margin, --stacks, or none at all!"
   with _ -> 
-    listing []
+    listing 0
 else
   try let id = Int.of_string call in
     single id
