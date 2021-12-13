@@ -31,7 +31,7 @@ let deconstruct_json_item_list (l: Yojson.Safe.t list): item list =
   List.fold_left l ~init:[] ~f:(fun acc x -> 
     match item_of_yojson x with
     | Ok(item) -> item::acc
-    | Error msg -> failwith "Error Reading In Data")
+    | Error msg -> failwith "Error Reading In Data") [@coverage off]
 
 (*Calculate margins for each item*)
 let calculate_margins ~home:(home:int) ~dc:(dc:int): margin =
@@ -47,7 +47,7 @@ let read_file filename =
 
 let write_file filename message =
   let oc = Out_channel.create filename in
-  Printf.fprintf oc "%s\n" message;
+  Printf.fprintf oc "%s" message;
   Out_channel.close oc
 
 let [@coverage off] read_data _: item list =
