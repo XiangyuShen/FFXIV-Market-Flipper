@@ -93,8 +93,9 @@ let [@coverage off] prices_on_server ~server:(server:string) ~item:(item:string)
   let listings = result |> member "listings" |> to_list in
   let history = result |> member "recentHistory" |> to_list in
   if (List.length listings = 0) then ((0,0),0) else
-  ((List.hd_exn listings |> member "pricePerUnit" |> to_int, List.hd_exn listings |> member "quantity" |> to_int),
-  List.hd_exn history |> member "timestamp" |> to_int)
+  ((List.hd_exn listings |> member "pricePerUnit" 
+    |> to_int, List.hd_exn listings |> member "quantity" |> to_int),
+    List.hd_exn history |> member "timestamp" |> to_int)
 
 (* Find the data center that contains the server the user chose *)
 let rec find_dc (dcs: (string * Yojson.Basic.t) list) ~(server:string): string =
@@ -121,7 +122,8 @@ let [@coverage off] prices_on_dc ~dc:(dc:string) ~item:(item:string): listing * 
     body |> Cohttp_lwt.Body.to_string >|= fun body ->
     body in
   let open Yojson.Basic.Util in
-  let top_listing = Lwt_main.run price_req |> Yojson.Basic.from_string |> member "listings" |> to_list |> List.hd_exn in
+  let top_listing = Lwt_main.run price_req |> Yojson.Basic.from_string 
+    |> member "listings" |> to_list |> List.hd_exn in
   let price =  top_listing |> member "pricePerUnit" |> to_int in
   let quant = top_listing |> member "quantity" |> to_int in
   let world = top_listing |> member "worldName" |> to_string in
@@ -142,8 +144,10 @@ let [@coverage off] init (server:string): _ =
   try let server = read_file "server.txt" in
     let name = name_of_id ~id:id in
     let ((servp, servq), date) = prices_on_server ~server:server ~item:id in
-    let timeSoldAgo = Core.Unix.strftime (Float.(-) (Unix.time()) (Int.to_float date) |> Unix.localtime) "%H:%M:%S" in
-    let timeSold = Core.Unix.strftime (Int.to_float date |> Unix.localtime) "%m/%d/%Y, %H:%M:%S" in
+    let timeSoldAgo = Core.Unix.strftime (Float.(-) (Unix.time()) 
+      (Int.to_float date) |> Unix.localtime) "%H:%M:%S" in
+    let timeSold = Core.Unix.strftime 
+      (Int.to_float date |> Unix.localtime) "%m/%d/%Y, %H:%M:%S" in
     let dc = get_dc server in 
     let ((dcp, dcq), lowest) = prices_on_dc ~dc:dc ~item:id in
     print_endline (name^": \n
@@ -154,7 +158,8 @@ let [@coverage off] init (server:string): _ =
  
 (* Grab all prices and process *)
 let [@coverage off] update (server:string): _ =
-  let market_req = Client.get (Uri.of_string (univ_URL^"marketable")) >>= fun (_, body) ->
+  let market_req = Client.get 
+    (Uri.of_string (univ_URL^"marketable")) >>= fun (_, body) ->
     body |> Cohttp_lwt.Body.to_string >|= fun body ->
     body in
   let open Yojson.Basic.Util in
@@ -182,8 +187,10 @@ let [@coverage off] listing_helper (filename: string) (margin: int) (server_name
     else if margin = 1 then 
       acc ^ "| " ^ server_name ^ ": " ^ name ^ " " ^ (Int.to_string servp) ^
         " | " ^ lowest ^ ": " ^ name ^ " "^ (Int.to_string dcp) ^ " |"
-    else acc ^ "| " ^ server_name ^ ": " ^ name ^ " " ^ (Int.to_string servp) ^ " " ^ (Int.to_string servq) 
-        ^ " | " ^ lowest ^ ": " ^ name ^ " "^ (Int.to_string dcp) ^ " " ^ (Int.to_string dcq) ^ " |")
+    else acc ^ "| " ^ server_name ^ ": " ^ name ^ " " 
+        ^ (Int.to_string servp) ^ " " ^ (Int.to_string servq) 
+        ^ " | " ^ lowest ^ ": " ^ name ^ " " 
+        ^ (Int.to_string dcp) ^ " " ^ (Int.to_string dcq) ^ " |")
   in
   print_endline printable
 (* Grab listings with user specified conditions, flags contains an int
