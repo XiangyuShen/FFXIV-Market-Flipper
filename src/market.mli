@@ -16,7 +16,7 @@ a sorted list or binary tree of some sort and sort during update*)
 val calculate_margins: home:int -> dc:int -> margin
 
 (*Read data from file*)
-val read_data: _ -> item list
+val read_data: string -> item list
 (*Save data to file*)
 val write_data: item list -> unit
 
@@ -26,7 +26,7 @@ val name_of_id : id:string -> string
 val id_of_name : name:string -> string
 
 (* Get prices on user's server*)
-val prices_on_server : server:string -> item:string -> listing
+val prices_on_server : server:string -> item:string -> listing * int
 
 (* Deconstruct list of Yojson items to strings/ints for specific API request result*)
 val deconstruct_json_string_list: (Yojson.Basic.t list) -> string list
@@ -45,4 +45,7 @@ val init: string -> unit
 (* Grab all prices and process *)
 val update: string -> _
 (* Grab listings with user specified conditions*)
-val listing: string list -> _
+val listing: bool list -> _
+
+(* Grabs the listing of a single item*)
+val single: string -> _
