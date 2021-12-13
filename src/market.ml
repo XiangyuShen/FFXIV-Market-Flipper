@@ -61,7 +61,7 @@ let [@coverage off] write_data (l:item list): _ =
 
 (* Translate item name to id and vice versa *)
 let name_of_id ~id:(id:string): string =
-  let req = Client.get (Uri.of_string ("https://xivapi.com/item/"^id)) >>= fun (_, body) ->
+  let req = Client.get (Uri.of_string (xiv_URL^"item/"^id)) >>= fun (_, body) ->
     body |> Cohttp_lwt.Body.to_string >|= fun body ->
     body
     in
@@ -69,7 +69,7 @@ let name_of_id ~id:(id:string): string =
   Lwt_main.run req |> Yojson.Basic.from_string |> member "Name" |> to_string
 
 let id_of_name ~name:(name:string): string = 
-  let req = Client.get (Uri.of_string ("https://xivapi.com/search?string="^name)) >>= fun (_, body) ->
+  let req = Client.get (Uri.of_string (xiv_URL^"search?string="^name)) >>= fun (_, body) ->
     body |> Cohttp_lwt.Body.to_string >|= fun body ->
     body
     in
@@ -78,7 +78,7 @@ let id_of_name ~name:(name:string): string =
 
 (* Get prices on user's server*)
 let [@coverage off] prices_on_server ~server:(server:string) ~item:(item:string): listing =
-  let req = Client.get (Uri.of_string ("https://universalis.app/api/"^server^"/"^item)) >>= fun (_, body) ->
+  let req = Client.get (Uri.of_string (univ_URL^server^"/"^item)) >>= fun (_, body) ->
     body |> Cohttp_lwt.Body.to_string >|= fun body ->
     body
   in
@@ -96,7 +96,7 @@ let rec find_dc (dcs: (string * Yojson.Basic.t) list) ~(server:string): string =
     | dc, servers -> if List.mem (Yojson.Basic.Util.to_list servers |> deconstruct_json_string_list) server ~equal:String.equal then dc else find_dc tl ~server:server
 
 let get_dc (server:string): string =
-  let dc_req = Client.get (Uri.of_string ("https://xivapi.com/servers/dc")) >>= fun (_, body) ->
+  let dc_req = Client.get (Uri.of_string (xiv_URL^"servers/dc")) >>= fun (_, body) ->
     body |> Cohttp_lwt.Body.to_string >|= fun body ->
     body
     in 
@@ -104,7 +104,7 @@ let get_dc (server:string): string =
 
 (* Get prices on the user's data center*)
 let [@coverage off] prices_on_dc ~dc:(dc:string) ~item:(item:string): listing * string =
-  let price_req = Client.get (Uri.of_string ("https://universalis.app/api/"^dc^"/"^item)) >>= fun (_, body) ->
+  let price_req = Client.get (Uri.of_string (univ_URL^dc^"/"^item)) >>= fun (_, body) ->
     body |> Cohttp_lwt.Body.to_string >|= fun body ->
     body in
   let open Yojson.Basic.Util in
@@ -123,7 +123,7 @@ let [@coverage off] init (server:string): _ =
 (* Grab all prices and process *)
 let [@coverage off] update (server:string): _ =
   failwith "unimplemented"
-  (*let market_req = Client.get (Uri.of_string ("https://universalis.app/api/marketable")) >>= fun (_, body) ->
+  (*let market_req = Client.get (Uri.of_string (univ_URL^"marketable")) >>= fun (_, body) ->
     body |> Cohttp_lwt.Body.to_string >|= fun body ->
     body in
   let open Yojson.Basic.Util in

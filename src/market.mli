@@ -18,7 +18,7 @@ val calculate_margins: home:int -> dc:int -> margin
 (*Read data from file*)
 val read_data: _ -> item list
 (*Save data to file*)
-val write_data: item list -> _
+val write_data: item list -> unit
 
 (* Translate item name to id and vice versa *)
 val name_of_id : id:string -> string
@@ -41,7 +41,7 @@ val prices_on_dc: dc:string -> item:string -> listing * string
 (* Overarching functions for user requests *)
 
 (* Initialize user server and create storage file *)
-val init: string -> _
+val init: string -> unit
 (* Grab all prices and process *)
 val update: string -> _
 (* Grab listings with user specified conditions*)
