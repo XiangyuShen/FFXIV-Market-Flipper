@@ -132,7 +132,7 @@ let [@coverage off] prices_on_dc ~dc:(dc:string) ~item:(item:string): listing * 
 (* Overarching functions for user requests *)
 
 (* Initialize user server and create storage file *)
-let [@coverage off] init (server:string): _ =
+let [@coverage off] init (server:string): unit =
   try let dc = get_dc server in
   write_file "server.txt" @@ String.lowercase server;
   let output = "Home server set to: "^server^" on "^dc^"!\n
@@ -140,7 +140,7 @@ let [@coverage off] init (server:string): _ =
   print_endline output
   with _ -> print_endline "Please init with a valid server name."
 
-  let [@coverage off] single (id:string): _ =
+  let [@coverage off] single (id:string): unit =
   try let server = read_file "server.txt" in
     let name = name_of_id ~id:id in
     let ((servp, servq), date) = prices_on_server ~server:server ~item:id in
@@ -157,7 +157,7 @@ let [@coverage off] init (server:string): _ =
   with _ -> print_endline "Please run init first."
  
 (* Grab all prices and process *)
-let [@coverage off] update (server:string): _ =
+let [@coverage off] update (server:string): unit =
   let market_req = Client.get 
     (Uri.of_string (univ_URL^"marketable")) >>= fun (_, body) ->
     body |> Cohttp_lwt.Body.to_string >|= fun body ->
