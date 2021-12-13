@@ -10,9 +10,11 @@ if String.(=) "init" call then
     init server
   with _ -> print_endline "Please init with a valid server name."
 else if String.(=) "update" call then
-  print_string "Loading...\n";
-  update;
-  print_endline "Complete!"
+  try let server = Array.get args 2 in
+    print_string "Loading...\n";
+    update server;
+    print_endline "Complete!"
+  with _ -> print_endline "Please init first."
 else if String.(=) "listings" call then
   try let flag = Array.get args 2 in
     if String.(=) "--margin" flag then
@@ -26,7 +28,7 @@ else if String.(=) "listings" call then
     listing 0
 else
   try let id = Int.of_string call in
-    single id
+    single @@ Int.to_string id
   with _ ->
-    let id = id_of_name in 
-      single @@ Int.of_string id
+    let id = id_of_name ~name:call in 
+      single id
