@@ -2,14 +2,12 @@ open Core
 open Lwt
 open Cohttp_lwt_unix
 
-[@@@ocaml.warning "-27"]
-
 let xiv_URL = "https://xivapi.com/"
 
 let univ_URL = "https://universalis.app/api/"
 
 (* Raw margin, then percent margin*)
-type margin = (int * float) [@@deriving yojson]
+type margin = (int * float) [@@deriving yojson] 
 
 (*Price, quantity*)
 type listing = (int * int) [@@deriving yojson]
@@ -18,7 +16,6 @@ type listing = (int * int) [@@deriving yojson]
 lowest price server name, date last sold on server, margin*)
 type item = (string * listing * listing 
             * string * int * margin) [@@deriving yojson]
-
 
 (* Deconstruct list of Yojson items*)
 
@@ -36,7 +33,7 @@ let deconstruct_json_item_list (l: Yojson.Safe.t list): item list =
     Yojson.Safe.from_string in
     match item_of_yojson temp with
     | Ok(item) -> item::acc
-    | Error msg -> failwith "Error Reading In Data") [@coverage off]
+    | Error _ -> failwith "Error Reading In Data") [@coverage off]
 
 (*Calculate margins for each item*)
 let calculate_margins ~home:(home:int) ~dc:(dc:int): margin =
@@ -44,13 +41,13 @@ let calculate_margins ~home:(home:int) ~dc:(dc:int): margin =
   (raw, (Float.(/) (Float.of_int raw) (Float.of_int dc)))
 
 (*Read data from file*)
-let read_file filename =
+let [@coverage off]read_file filename =
   let file = In_channel.create filename in
   let strings = In_channel.input_all file in
   In_channel.close file;
   strings
 
-let write_file filename message =
+let [@coverage off]write_file filename message =
   let oc = Out_channel.create filename in
   Printf.fprintf oc "%s" message;
   Out_channel.close oc
@@ -159,14 +156,14 @@ let [@coverage off] init (server:string): unit =
     let dc = get_dc server in 
     let ((dcp, dcq), lowest) = prices_on_dc ~dc:dc ~item:id in
     print_endline (name^
-    ": \nCheapest on "^server^": "^(Int.to_string servp)^
-    "\nCheapest on your Data Center: "^(Int.to_string dcp)^" on "^lowest^
+    ": \nCheapest on "^server^": "^(Int.to_string servp)^" x"^(Int.to_string servq)^
+    "\nCheapest on your Data Center: "^(Int.to_string dcp)
+    ^" x"^(Int.to_string dcq)^" on "^lowest^
     "\nLast sold on your server: "^timeSold^" ("^timeSoldAgo^" ago)")
   with _ -> print_endline "Please run init first."
  
 (* Grab all prices and process *)
 let [@coverage off] update (server: string): unit =
-  let server = read_file "server.txt" in
   let market_req = Client.get 
     (Uri.of_string (univ_URL^"marketable")) >>= fun (_, body) ->
     body |> Cohttp_lwt.Body.to_string >|= fun body ->
@@ -194,8 +191,8 @@ let [@coverage off] update (server: string): unit =
   let (percrest, perc5) = List.split_n sort_percent (List.length sort_percent - 5) in
   write_data "stacks.txt" raw5;
   write_data "margins.txt" perc5;
-  write_data "stacksrest.txt" raw5;
-  write_data "marginsrest.txt" perc5
+  write_data "stacksrest.txt" rawrest;
+  write_data "marginsrest.txt" percrest
     
   
 (* Helper function to write listings to command line*)
@@ -211,7 +208,7 @@ else
 |          	 Raw Price Difference on "^dc^"\t\t\t\t\t|\n"
 in
   let printable = List.fold temp ~init:"" ~f:(fun acc x -> 
-    let (name,(servp, servq),(dcp, dcq), lowest, date,(raw, percent)) = x in
+    let (name,(servp, servq),(dcp, dcq), lowest, _,(_, _)) = x in
     if margin = 0 then
         acc ^ "| " ^ server_name ^ ": " ^ name ^ " " ^ (Int.to_string servp) ^
         "\t\t | " ^ lowest ^ ": " ^ name ^ " "^ (Int.to_string dcp) ^ " \t|\n"

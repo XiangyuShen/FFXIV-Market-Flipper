@@ -1,16 +1,21 @@
 (* Raw margin, then percent margin*)
 type margin = (int * float)
 
+val margin_to_yojson : margin -> Yojson.Safe.t
+val margin_of_yojson : Yojson.Safe.t -> margin Ppx_deriving_yojson_runtime.error_or
+
 (*Price, quantity*)
 type listing = (int * int)
+
+val listing_to_yojson : listing -> Yojson.Safe.t
+val listing_of_yojson : Yojson.Safe.t -> listing Ppx_deriving_yojson_runtime.error_or
 
 (* Name, lowest listing on server, lowest listing on data center, 
 lowest price server name, date last sold on server, margin*)
 type item = (string * listing * listing * string * int * margin)
 
-(* Note: We currently plan to order the list of items when the users 
-calls for listings. Depending on how this goes, we may instead choose 
-a sorted list or binary tree of some sort and sort during update*)
+val item_to_yojson : item -> Yojson.Safe.t
+val item_of_yojson : Yojson.Safe.t -> item Ppx_deriving_yojson_runtime.error_or
 
 (*Calculate margins for each item*)
 val calculate_margins: home:int -> dc:int -> margin

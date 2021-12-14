@@ -38,21 +38,54 @@ let test_get_dc _ =
   assert_equal "Elemental" @@ get_dc "tonberry";
   assert_equal "Light" @@ get_dc "odin"
 
+  let invariant_listing _ = 
+    let invariant listing1 = assert_equal listing1 @@ 
+      (match listing_of_yojson (listing_to_yojson listing1) with 
+      | Ok(x) -> x
+      | Error _ -> failwith "Test Failed") in
+    invariant (12,12);
+    invariant (121111,1211111111);
+    invariant (0,0)
 
+  let invariant_margin _ = 
+    let invariant margin1 = assert_equal margin1 @@ 
+    (match margin_of_yojson (margin_to_yojson margin1) with 
+    | Ok(x) -> x
+    | Error _ -> failwith "Test Failed") in
+    invariant (12,1.2);
+    invariant (121111,1.211111111);
+    invariant (0,0.)
 
-let checkpoint_tests = 
+  let invariant_item _ = 
+    let invariant item1 = assert_equal item1 @@ 
+    (match item_of_yojson (item_to_yojson item1) with 
+    | Ok(x) -> x
+    | Error _ -> failwith "Test Failed") in
+    invariant ("name", (12,12), (123,1), "server", 12321312421, (12,1.2));
+    invariant ("Ash Mask", (12,12344), (123,11), "Hyperion", 11, (12,1.2));
+    invariant ("Null", (0,0), (0,0), "Null", 0, (0,0.))
+
+let general_tests = 
   "Checkpoint Tests" >: test_list [
     "Test name_of_id" >:: test_name_of_id;
     "Test id_of_name" >:: test_id_of_name;
-    "Test Invariant id and name" >:: invariant_id_and_name;
     "Tests Calculate Margins" >:: test_calculate_margins;
     "Test Deconstruct json String List" >:: test_deconstruct_json_string_list;
     "Test Deconstruct json Int List" >:: test_deconstruct_json_int_list;
     "Test Get DC" >:: test_get_dc
   ]
+
+let invariant_tests = 
+  "Invariant Tests" >: test_list [
+    "Test Invariant id and name" >:: invariant_id_and_name;
+    "Test Listing yojson" >:: invariant_listing;
+    "Test Margin yojson" >:: invariant_margin;
+    "Test Item yojson" >:: invariant_item;
+  ]
 let series = 
   "Market Flipper Tests" >::: [
-    checkpoint_tests;
+    general_tests;
+    invariant_tests;
   ]
 
 let () =

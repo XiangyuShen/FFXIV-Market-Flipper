@@ -3,4 +3,7 @@
   (libraries
     core
     ounit2
-    market))
+    market
+    yojson)
+    (preprocess 
+    (pps ppx_deriving_yojson)))
