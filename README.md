@@ -24,6 +24,10 @@ For more information, see .opam file.
 ## Setup
 To run this project, clone or download this repositiory locally, then run:
 
+### Installing OCaml and Opam
+
+https://ocaml.org/docs/install.html
+
 ### Dune
 ```
 $ cd ../FFXIV-Market-Flipper
