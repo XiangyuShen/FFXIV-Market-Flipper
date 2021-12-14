@@ -59,8 +59,8 @@ let [@coverage off] read_data filename: item list =
                               @@ Yojson.Safe.from_string data)
 
 (*Save data to file*)
-let [@coverage off] write_data (l:item list): _ =
-  write_file "data.txt" @@ List.to_string l ~f:(fun a -> 
+let [@coverage off] write_data filename (l:item list): _ =
+  write_file filename @@ List.to_string l ~f:(fun a -> 
   Yojson.Safe.to_string @@ item_to_yojson a)
 
 (* Translate item name to id and vice versa *)
@@ -175,10 +175,19 @@ let [@coverage off] update (server: string): unit =
     let ((servp, servq), date) = prices_on_server ~server:server ~item:id in
     let dc = get_dc server in 
     let ((dcp, dcq), lowest) = prices_on_dc ~dc:dc ~item:id in
-    let margin = calculate_margins ~home:servp ~dc:dcq in
+    let margin = calculate_margins ~home:servp ~dc:dcp in
+    print_endline @@ Int.to_string x;
     (name, (servp, servq), (dcp, dcq), lowest, date, margin)::acc) 
   in
-  write_data item_list
+  let sort_raw = List.sort item_list ~compare:(fun 
+  (_, _, _, _, _, (raw, _))
+  (_, _, _, _, _, (raw2, _))-> Int.compare raw raw2) in
+  let sort_percent = List.sort item_list ~compare:(fun 
+  (_, _, _, _, _, (_, perc))
+  (_, _, _, _, _, (_, perc2))-> Float.compare perc perc2) in
+  write_data "stacks.txt" sort_raw;
+  write_data "margins.txt" sort_percent
+    
   
 (* Helper function to write listings to command line*)
 let [@coverage off] listing_helper (filename: string) (margin: int) (server_name: string): unit =

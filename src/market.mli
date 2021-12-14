@@ -18,7 +18,7 @@ val calculate_margins: home:int -> dc:int -> margin
 (*Read data from file*)
 val read_data: string -> item list
 (*Save data to file*)
-val write_data: item list -> unit
+val write_data: string -> item list -> unit
 
 val read_file: string -> string
 
