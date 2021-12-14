@@ -10,7 +10,7 @@
 Application to find the best goods to flip for profit on the FFXIV marketboard.
 	
 ## Technologies
-Project is created with:
+Project is created with and required to run:
 * Ocaml: v4.12.0
 * Dune: v2.9
 * Cohttp-async: v4.0.0
@@ -18,6 +18,8 @@ Project is created with:
 * Yojson: v1.7.0
 * Core: v0.14.1
 * Lwt_ssl v1.1.3 OR tls v0.15.1
+
+For more information, see .opam file.
 	
 ## Setup
 To run this project, clone or download this repositiory locally, then run:
@@ -35,12 +37,12 @@ Where {SERVER-NAME} is the name of the FFXIV server you want to sell on.
 
 ### Single-item Lookup
 ```
-$ dune exec -- ./flipper.exe {ITEM-NAME/ITEM-ID}
+$ dune exec -- ./src/flipper.exe {ITEM-NAME/ITEM-ID}
 ```
 
 ### Multi-Lookup
 ```
-$ dune exec -- ./flipper.exe listings
-$ dune exec -- ./flipper.exe listings --margin
-$ dune exec -- ./flipper.exe listings --stacks
+$ dune exec -- ./src/flipper.exe listings
+$ dune exec -- ./src/flipper.exe listings --margin
+$ dune exec -- ./src/flipper.exe listings --stacks
 ```
