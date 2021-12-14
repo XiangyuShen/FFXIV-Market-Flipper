@@ -27,7 +27,7 @@ To run this project, clone or download this repositiory locally, then run:
 ### Dune
 ```
 $ cd ../FFXIV-Market-Flipper
-$ dune build
+$ dune build @install
 $ dune exec -- ./src/flipper.exe init {SERVER-NAME}
 $ dune exec -- ./src/flipper.exe update
 ```
