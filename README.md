@@ -26,8 +26,8 @@ To run this project, clone or download this repositiory locally, then run:
 ```
 $ cd ../FFXIV-Market-Flipper
 $ dune build
-$ dune exec ./flipper.exe init {SERVER-NAME}
-$ dune exec ./flipper.exe update
+$ dune exec -- ./src/flipper.exe init {SERVER-NAME}
+$ dune exec -- ./src/flipper.exe update
 ```
 Where {SERVER-NAME} is the name of the FFXIV server you want to sell on.
 
@@ -35,12 +35,12 @@ Where {SERVER-NAME} is the name of the FFXIV server you want to sell on.
 
 ### Single-item Lookup
 ```
-$ dune exec ./flipper.exe {ITEM-NAME/ITEM-ID}
+$ dune exec -- ./flipper.exe {ITEM-NAME/ITEM-ID}
 ```
 
 ### Multi-Lookup
 ```
-$ dune exec ./flipper.exe listings
-$ dune exec ./flipper.exe listings --margin
-$ dune exec ./flipper.exe listings --stacks
+$ dune exec -- ./flipper.exe listings
+$ dune exec -- ./flipper.exe listings --margin
+$ dune exec -- ./flipper.exe listings --stacks
 ```
