@@ -43,7 +43,7 @@ val prices_on_dc: dc:string -> item:string -> listing * string
 (* Initialize user server and create storage file *)
 val init: string -> unit
 (* Grab all prices and process *)
-val update: string -> unit
+val update: unit
 (* Grab listings with user specified conditions*)
 val listing: int -> unit
 

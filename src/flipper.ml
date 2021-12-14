@@ -10,9 +10,9 @@ if String.(=) "init" call then
     init server
   with _ -> print_endline "Please init with a valid server name."
 else if String.(=) "update" call then
-  try let server = Array.get args 2 in
+  try
     print_string "Loading...\n";
-    update server;
+    update;
     print_endline "Complete!"
   with _ -> print_endline "Please init first."
 else if String.(=) "listings" call then
