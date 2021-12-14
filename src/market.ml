@@ -124,9 +124,9 @@ let [@coverage off] prices_on_dc ~dc:(dc:string) ~item:(item:string): listing * 
     body in
   let open Yojson.Basic.Util in
   let listings = Lwt_main.run price_req |> Yojson.Basic.from_string 
-    |> member "listings" |> to_list in
-  if (List.length listings = 0) then ((0,0),"None") else
-  let top_listing = listings |> List.hd_exn in
+     |> member "listings" |> to_list in
+   if (List.length listings = 0) then ((0,0),"None") else
+   let top_listing = listings |> List.hd_exn in
   let price =  top_listing |> member "pricePerUnit" |> to_int in
   let quant = top_listing |> member "quantity" |> to_int in
   let world = top_listing |> member "worldName" |> to_string in
@@ -139,7 +139,7 @@ let [@coverage off] init (server:string): unit =
   try let dc = get_dc server in
   write_file "server.txt" @@ String.lowercase server;
   let output = "Home server set to: "^server^" on "^dc^"!\n
-Make sure to run update to get the prices." in
+  Make sure to run update to get the prices." in
   print_endline output
   with _ -> print_endline "Please init with a valid server name."
 
@@ -160,7 +160,7 @@ Make sure to run update to get the prices." in
   with _ -> print_endline "Please run init first."
  
 (* Grab all prices and process *)
-let [@coverage off] update: unit =
+let [@coverage off] update (server: string): unit =
   let server = read_file "server.txt" in
   let market_req = Client.get 
     (Uri.of_string (univ_URL^"marketable")) >>= fun (_, body) ->

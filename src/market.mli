@@ -20,6 +20,8 @@ val read_data: string -> item list
 (*Save data to file*)
 val write_data: item list -> unit
 
+val read_file: string -> string
+
 (* Translate item name to id and vice versa *)
 val name_of_id : id:string -> string
 
@@ -43,7 +45,7 @@ val prices_on_dc: dc:string -> item:string -> listing * string
 (* Initialize user server and create storage file *)
 val init: string -> unit
 (* Grab all prices and process *)
-val update: unit
+val update: string -> unit
 (* Grab listings with user specified conditions*)
 val listing: int -> unit
 
