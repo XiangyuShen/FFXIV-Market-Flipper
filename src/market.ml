@@ -177,9 +177,11 @@ let [@coverage off] update (server: string): unit =
     let ((servp, servq), date) = prices_on_server ~server:server ~item:id in
     let dc = get_dc server in 
     let ((dcp, dcq), lowest) = prices_on_dc ~dc:dc ~item:id in
-    let margin = calculate_margins ~home:servp ~dc:dcp in
+    let (raw, percent) = calculate_margins ~home:servp ~dc:dcp in
     print_endline @@ Int.to_string x;
-    (name, (servp, servq), (dcp, dcq), lowest, date, margin)::acc) 
+    if Float.(>) percent 100. || String.(=) lowest "None" then 
+      acc else
+    (name, (servp, servq), (dcp, dcq), lowest, date, (raw, percent))::acc) 
   in
   let sort_raw = List.sort item_list ~compare:(fun 
   (_, _, _, _, _, (raw, _))
