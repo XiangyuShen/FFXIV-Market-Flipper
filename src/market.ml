@@ -32,7 +32,9 @@ let deconstruct_json_int_list (l: Yojson.Basic.t list): int list =
 
 let deconstruct_json_item_list (l: Yojson.Safe.t list): item list =
   List.fold_left l ~init:[] ~f:(fun acc x -> 
-    match item_of_yojson x with
+    let temp = Yojson.Safe.Util.to_string x |>
+    Yojson.Safe.from_string in
+    match item_of_yojson temp with
     | Ok(item) -> item::acc
     | Error msg -> failwith "Error Reading In Data") [@coverage off]
 
@@ -60,8 +62,11 @@ let [@coverage off] read_data filename: item list =
 
 (*Save data to file*)
 let [@coverage off] write_data filename (l:item list): _ =
-  write_file filename @@ List.to_string l ~f:(fun a -> 
-  Yojson.Safe.to_string @@ item_to_yojson a)
+  let data = List.to_string l ~f:(fun a -> 
+    (Yojson.Safe.to_string @@ item_to_yojson a)^",")
+    |> String.chop_prefix_if_exists ~prefix:"(" 
+    |> String.chop_suffix_if_exists ~suffix:")" in
+  write_file filename @@ "["^data^"]"
 
 (* Translate item name to id and vice versa *)
 let name_of_id ~id:(id:string): string =
@@ -73,7 +78,7 @@ let name_of_id ~id:(id:string): string =
   Lwt_main.run req |> Yojson.Basic.from_string |> member "Name" |> to_string
 
 let id_of_name ~name:(name:string): string = 
-  let req = Client.get (Uri.of_string (xiv_URL^"search?string="^name)) 
+  let req = Client.get (Uri.of_string (xiv_URL^"search?indexes=item&string="^name)) 
   >>= fun (_, body) ->
     body |> Cohttp_lwt.Body.to_string >|= fun body ->
     body
@@ -148,15 +153,15 @@ let [@coverage off] init (server:string): unit =
     let name = name_of_id ~id:id in
     let ((servp, servq), date) = prices_on_server ~server:server ~item:id in
     let timeSoldAgo = Core.Unix.strftime (Float.(-) (Unix.time()) 
-      (Int.to_float date) |> Unix.localtime) "%H:%M:%S" in
+      (Int.to_float date) |> Unix.localtime) "%Hh:%Mm:%Ss" in
     let timeSold = Core.Unix.strftime 
       (Int.to_float date |> Unix.localtime) "%m/%d/%Y, %H:%M:%S" in
     let dc = get_dc server in 
     let ((dcp, dcq), lowest) = prices_on_dc ~dc:dc ~item:id in
-    print_endline (name^": \n
-    Cheapest on "^server^": "^(Int.to_string servp)^ "\n
-    Cheapest on your Data Center: "^(Int.to_string dcp)^" on "^lowest^"\n
-    Last sold on your server: "^timeSold^" ("^timeSoldAgo^" ago)")
+    print_endline (name^
+    ": \nCheapest on "^server^": "^(Int.to_string servp)^
+    "\nCheapest on your Data Center: "^(Int.to_string dcp)^" on "^lowest^
+    "\nLast sold on your server: "^timeSold^" ("^timeSoldAgo^" ago)")
   with _ -> print_endline "Please run init first."
  
 (* Grab all prices and process *)
@@ -185,27 +190,43 @@ let [@coverage off] update (server: string): unit =
   let sort_percent = List.sort item_list ~compare:(fun 
   (_, _, _, _, _, (_, perc))
   (_, _, _, _, _, (_, perc2))-> Float.compare perc perc2) in
-  write_data "stacks.txt" sort_raw;
-  write_data "margins.txt" sort_percent
+  let (rawrest, raw5) = List.split_n sort_raw (List.length sort_raw - 5) in
+  let (percrest, perc5) = List.split_n sort_percent (List.length sort_percent - 5) in
+  write_data "stacks.txt" raw5;
+  write_data "margins.txt" perc5;
+  write_data "stacksrest.txt" raw5;
+  write_data "marginsrest.txt" perc5
     
   
 (* Helper function to write listings to command line*)
 let [@coverage off] listing_helper (filename: string) (margin: int) (server_name: string): unit =
-  let temp,_ = List.split_n (read_data filename) 4 in
+  let temp,_ = List.split_n (read_data filename) 5 in
+  let dc = get_dc server_name in
+  let header = 
+  if margin = 1 then
+    "____________________________________________________________________________
+|         	 Percent Price Gain on "^dc^"\t\t\t\t\t|\n"
+else
+  "______________________________________________________________________________
+|          	 Raw Price Difference on "^dc^"\t\t\t\t\t|\n"
+in
   let printable = List.fold temp ~init:"" ~f:(fun acc x -> 
     let (name,(servp, servq),(dcp, dcq), lowest, date,(raw, percent)) = x in
     if margin = 0 then
         acc ^ "| " ^ server_name ^ ": " ^ name ^ " " ^ (Int.to_string servp) ^
-        " | " ^ lowest ^ ": " ^ name ^ " "^ (Int.to_string dcp) ^ " |"
+        "\t\t | " ^ lowest ^ ": " ^ name ^ " "^ (Int.to_string dcp) ^ " \t|\n"
     else if margin = 1 then 
       acc ^ "| " ^ server_name ^ ": " ^ name ^ " " ^ (Int.to_string servp) ^
-        " | " ^ lowest ^ ": " ^ name ^ " "^ (Int.to_string dcp) ^ " |"
+        "\t\t  | " ^ lowest ^ ": " ^ name ^ " "^ (Int.to_string dcp) ^ " \t|\n"
     else acc ^ "| " ^ server_name ^ ": " ^ name ^ " " 
-        ^ (Int.to_string servp) ^ " " ^ (Int.to_string servq) 
-        ^ " | " ^ lowest ^ ": " ^ name ^ " " 
-        ^ (Int.to_string dcp) ^ " " ^ (Int.to_string dcq) ^ " |")
+        ^ (Int.to_string servp) ^ " x" ^ (Int.to_string servq) 
+        ^ "\t\t  | " ^ lowest ^ ": " ^ name ^ " " 
+        ^ (Int.to_string dcp) ^ " x" ^ (Int.to_string dcq) ^ " \t|\n")
   in
-  print_endline printable
+  let total = header ^ printable ^ 
+  "|___________________________________________________________________________|"
+in
+  print_endline total
 (* Grab listings with user specified conditions, flags contains an int
   1 being margin, 2 being stacks, and 0 being raw*)
 let [@coverage off] listing (flags: int): unit = 
@@ -215,4 +236,4 @@ try let server = read_file "server.txt" in
   else if flags = 1
     then listing_helper "margins.txt" flags server
   else listing_helper "stacks.txt" flags server 
-with _ -> print_endline "Please run init and update first"
+with exn -> raise exn
