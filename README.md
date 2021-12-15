@@ -31,7 +31,8 @@ https://ocaml.org/docs/install.html
 ### Dune
 ```
 $ cd ../FFXIV-Market-Flipper
-$ dune build @install
+$ dune build
+$ dune install
 $ dune exec -- ./src/flipper.exe init {SERVER-NAME}
 $ dune exec -- ./src/flipper.exe update
 ```
