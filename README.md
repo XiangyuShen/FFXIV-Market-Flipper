@@ -38,6 +38,9 @@ $ dune exec -- ./src/flipper.exe update
 ```
 Where {SERVER-NAME} is the name of the FFXIV server you want to sell on.
 
+WARNING: Running update may take 1-2 hours, as the Universalis API is rate limited.
+We may eventually run this as a website, but for now you have to run the source code locally.
+
 ## Usage
 
 ### Single-item Lookup
